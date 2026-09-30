@@ -3,594 +3,702 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FULCO su Amazon — Guida al flat file SHIRT</title>
+<title>FULCO su Amazon - Guida al flat file SHIRT - Sidea X</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy: #14213d;
-    --ink: #1f2933;
-    --muted: #5b6770;
-    --paper: #fbfaf7;
-    --line: #e3e0d8;
-    --accent: #b5832a;
-    --ok: #2f7d4f;
-    --ok-bg: #e8f4ec;
-    --ko: #b23a3a;
-    --ko-bg: #fbeaea;
-    --warn-bg: #fdf4e3;
-    --code-bg: #f1efe9;
+  :root{
+    --navy:#00253D; --navy2:#0B3254; --navy3:#002E5D; --dark:#010326;
+    --cyan:#66CBF2; --cyan2:#7CD2F4; --cyan3:#47B4BE;
+    --purple:#93609E; --purple2:#C9AFCE;
+    --ice:#E1F0FC; --icebg:#F4F7FA; --white:#FFFFFF;
+    --mute:#9E9E9E; --grey:#595959;
+    --line:#E3E8EE; --linen:#133A5C;
+    --gold:#FFAB40; --green:#2E7D32; --red:#C62828;
+    --err-bg:#FBEAEA; --ok-bg:#E8F4EC;
+    --font:"Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: var(--navy);
-    color: var(--ink);
-    overflow: hidden;
-  }
-  .deck { position: relative; width: 100vw; height: 100vh; }
-  .slide {
-    position: absolute; inset: 0;
-    display: none;
-    padding: 5vh 7vw 11vh;
-    background: var(--paper);
-    overflow-y: auto;
-  }
-  .slide.active { display: block; animation: fade .25s ease; }
-  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:var(--font);background:var(--dark);color:var(--grey);overflow:hidden;}
 
-  .kicker {
-    font-size: .8rem; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--accent); font-weight: 700; margin-bottom: .6rem;
-  }
-  h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 4.2vw, 3.4rem); color: var(--navy); line-height: 1.1; margin-bottom: 1rem; }
-  h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.5rem, 2.8vw, 2.3rem); color: var(--navy); line-height: 1.15; margin-bottom: 1.2rem; }
-  h3 { font-size: 1.05rem; color: var(--navy); margin: 1rem 0 .5rem; }
-  p, li { font-size: clamp(.95rem, 1.2vw, 1.12rem); line-height: 1.55; }
-  p + p { margin-top: .7rem; }
-  ul, ol { padding-left: 1.3rem; }
-  li + li { margin-top: .35rem; }
-  code {
-    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: .88em;
-    background: var(--code-bg); padding: .08em .35em; border-radius: 4px; color: #6b3f00;
-  }
-  pre {
-    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: .92rem;
-    background: var(--navy); color: #f3efe4; padding: 1rem 1.2rem; border-radius: 8px;
-    overflow-x: auto; line-height: 1.5; margin: .8rem 0;
-  }
-  table { border-collapse: collapse; width: 100%; margin: .6rem 0 1rem; font-size: clamp(.8rem, 1vw, .95rem); }
-  th, td { text-align: left; padding: .5rem .65rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { background: var(--navy); color: #fff; font-weight: 600; }
-  tr:nth-child(even) td { background: #f5f3ee; }
-  .grid { display: grid; gap: 1.2rem; }
-  .g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-  .g3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem 1.2rem; }
-  .card h3 { margin-top: 0; }
-  .big { font-family: Georgia, serif; font-size: 2.6rem; color: var(--accent); line-height: 1; }
-  .note {
-    border-left: 4px solid var(--accent); background: var(--warn-bg);
-    padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin-top: 1rem;
-  }
-  .note strong { color: var(--navy); }
-  .ok { color: var(--ok); font-weight: 600; }
-  .ko { color: var(--ko); font-weight: 600; }
-  td.bad { background: var(--ko-bg) !important; }
-  td.good { background: var(--ok-bg) !important; }
-  .muted { color: var(--muted); font-size: .9rem; }
-  .cover { background: var(--navy); color: #f3efe4; display: none; }
-  .cover.active { display: flex; flex-direction: column; justify-content: center; }
-  .cover h1 { color: #fff; font-size: clamp(2.4rem, 5.5vw, 4.4rem); }
-  .cover p { color: #cfd6e0; max-width: 46rem; }
-  .cover .kicker { color: #e0b766; }
-  .section { background: #efe9dc; display: none; }
-  .section.active { display: flex; flex-direction: column; justify-content: center; }
-  .section .num { font-family: Georgia, serif; font-size: 6rem; color: var(--accent); line-height: 1; }
+  /* ---- Deck / stage 16:9 con letterbox ---- */
+  .deck{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--dark);}
+  .stage{position:relative;width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;box-shadow:0 20px 70px rgba(0,0,0,.55);}
+  .slide{position:absolute;inset:0;display:none;overflow:hidden;}
+  .slide.active{display:block;}
+  /* unita relative al canvas: 1vw ~ scala col palco. Usiamo cqw via container query */
+  .stage{container-type:size;}
+  /* tipografia scalata al palco */
+  .slide{font-size:clamp(10px,1.62cqw,30px);}
 
-  .tree { font-family: "SF Mono", Menlo, monospace; font-size: .95rem; line-height: 1.8; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.3rem; }
-  .tree .p { color: var(--navy); font-weight: 700; }
-  .tree .c { color: var(--ok); }
-  .swatches { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .6rem; }
-  .sw { display: inline-flex; align-items: center; gap: .4rem; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .2rem .7rem .2rem .3rem; font-size: .85rem; }
-  .sw i { width: 1rem; height: 1rem; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); display: inline-block; }
-  .steps { counter-reset: s; list-style: none; padding: 0; }
-  .steps li { counter-increment: s; position: relative; padding-left: 2.6rem; margin-bottom: .8rem; }
-  .steps li::before {
-    content: counter(s); position: absolute; left: 0; top: 0;
-    width: 1.8rem; height: 1.8rem; border-radius: 50%;
-    background: var(--navy); color: #fff; font-weight: 700; font-size: .9rem;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .check li { list-style: none; position: relative; padding-left: 1.7rem; }
-  .check { padding-left: 0; }
-  .check li::before { content: "☐"; position: absolute; left: 0; color: var(--accent); }
+  /* fondali */
+  .bg-navy{background:var(--navy);color:var(--ice);}
+  .bg-white{background:var(--white);color:var(--grey);}
+  .bg-dark{background:var(--dark);color:var(--ice);}
 
-  nav.bar {
-    position: fixed; left: 0; right: 0; bottom: 0; height: 8vh; min-height: 52px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2rem; background: rgba(20,33,61,.97); color: #cfd6e0; z-index: 10; font-size: .9rem;
-  }
-  nav.bar button {
-    background: transparent; color: #fff; border: 1px solid #4a5a7a; border-radius: 6px;
-    padding: .45rem 1rem; font-size: .9rem; cursor: pointer;
-  }
-  nav.bar button:hover, nav.bar button:focus-visible { background: #2a3b60; outline: 2px solid #e0b766; outline-offset: 2px; }
-  nav.bar button:disabled { opacity: .35; cursor: default; }
-  .progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--accent); z-index: 11; transition: width .2s; }
-  .toc { columns: 2; column-gap: 2rem; }
-  .toc a { color: var(--navy); text-decoration: none; border-bottom: 1px dotted var(--muted); cursor: pointer; }
-  .toc li { break-inside: avoid; }
-  @media (max-width: 700px) { .toc { columns: 1; } nav.bar { padding: 0 .8rem; } }
-  /* Modalità export (?export): niente barra, per gli screenshot delle slide */
-  body.export nav.bar, body.export .progress { display: none; }
-  body.export .slide { padding-bottom: 5vh; }
+  /* onde decorative per cover / chiusura / divisori */
+  .waves{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  .waves svg{position:absolute;width:140%;height:140%;left:-20%;top:-10%;opacity:.5;}
 
-  /* Stampa / PDF: una slide per pagina 16:9 */
-  @page { size: 13.333in 7.5in; margin: 0; }
-  @media print {
-    html, body { height: auto; overflow: visible; background: var(--paper); }
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .deck { width: auto; height: auto; }
-    .slide { display: block !important; position: relative; inset: auto; width: 13.333in; height: 7.5in; padding: .55in .75in; overflow: hidden; break-after: page; animation: none !important; }
-    .cover, .section { display: flex !important; flex-direction: column; justify-content: center; }
-    .slide:last-of-type { break-after: auto; }
-    h1 { font-size: 2.8rem; } h2 { font-size: 2rem; }
-    p, li { font-size: 1.05rem; }
-    table { font-size: .9rem; }
-    .screen-only { display: none; }
-    th, td { padding: .35rem .55rem; }
-    nav.bar, .progress { display: none; }
-  }
+  /* logo X testuale top-left */
+  .logox{position:absolute;left:2.2cqw;top:2.2cqh;font-weight:700;letter-spacing:.12em;font-size:1.15cqw;}
+  .logox .x{color:var(--cyan);}
+  .logox.dark{color:var(--white);}
+  .logox.light{color:var(--navy);}
+
+  /* header contenuto */
+  .head{position:absolute;left:6.4cqw;top:7.5cqh;display:flex;gap:1cqw;align-items:flex-start;}
+  .head .bar{width:.38cqw;height:6.4cqh;flex:none;background:var(--cyan);}
+  .head .eyebrow{font-weight:600;font-size:1cqw;letter-spacing:.16em;text-transform:uppercase;}
+  .head .title{font-weight:600;font-size:2.25cqw;line-height:1.1;margin-top:.4cqh;}
+  .bg-navy .head .eyebrow{color:var(--cyan);}
+  .bg-navy .head .title{color:var(--white);}
+  .bg-white .head .eyebrow{color:var(--purple);}
+  .bg-white .head .title{color:var(--navy);}
+
+  .content{position:absolute;left:6.4cqw;right:5cqw;top:22cqh;bottom:6cqh;}
+
+  /* footer */
+  .footer{position:absolute;right:4cqw;bottom:3.2cqh;font-size:.68cqw;color:var(--mute);}
+  .bg-white .footer{color:#AAB4BF;}
+
+  /* ---- COVER ---- */
+  .cover{background:var(--navy);}
+  .cover .brand{position:absolute;left:6.2cqw;top:8cqh;font-weight:700;font-size:3.4cqw;letter-spacing:.06em;color:var(--white);}
+  .cover .brand .x{color:var(--cyan);}
+  .cover h1{position:absolute;left:6.4cqw;top:44cqh;width:70cqw;color:var(--white);font-weight:600;font-size:3.7cqw;line-height:1.12;}
+  .cover .tagline{position:absolute;left:6.4cqw;top:78cqh;background:var(--cyan);color:var(--navy);font-weight:600;font-size:1.35cqw;padding:.7cqh 1.3cqw;}
+  .cover .client{position:absolute;left:6.4cqw;top:89cqh;color:var(--mute);font-weight:500;font-size:1.2cqw;letter-spacing:.18em;text-transform:uppercase;}
+
+  /* ---- big number divider ---- */
+  .divider{background:var(--navy);}
+  .divider .num{position:absolute;left:5cqw;top:20cqh;font-weight:700;font-size:16cqw;line-height:1;color:var(--cyan);}
+  .divider .eyebrow{position:absolute;left:6.4cqw;top:70cqh;color:var(--purple2);font-weight:600;font-size:1.3cqw;letter-spacing:.2em;text-transform:uppercase;}
+  .divider .title{position:absolute;left:6.2cqw;top:76cqh;width:82cqw;color:var(--white);font-weight:600;font-size:3.2cqw;}
+
+  /* ---- generic pieces ---- */
+  p{line-height:1.5;}
+  .lead{font-size:1.28cqw;line-height:1.55;}
+  .bg-navy .lead{color:var(--ice);}
+  .bg-navy .lead strong{color:var(--white);}
+  .lead strong{font-weight:600;}
+  .hl-cy{color:var(--cyan);font-weight:600;}
+  .hl-pu{color:var(--purple);font-weight:600;}
+  .hl-navy{color:var(--navy);font-weight:600;}
+
+  /* stat box su navy */
+  .statbox{background:var(--navy2);border:1px solid var(--linen);position:relative;display:flex;align-items:center;padding:0 1.2cqw;gap:1cqw;}
+  .statbox::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.35cqw;}
+  .statbox.cy::before{background:var(--cyan);}
+  .statbox.pu::before{background:var(--purple);}
+  .statbox .v{font-weight:700;font-size:3.2cqw;color:var(--cyan);}
+  .statbox .l{font-weight:500;font-size:1cqw;color:var(--ice);line-height:1.25;}
+
+  /* KPI */
+  .kpirow{display:flex;gap:1.4cqw;}
+  .kpi{flex:1;background:var(--icebg);border:1px solid var(--line);position:relative;padding:2.4cqh 1cqw 1.6cqh;text-align:center;}
+  .kpi::before{content:"";position:absolute;left:0;right:0;top:0;height:.55cqh;}
+  .kpi.cy::before{background:var(--cyan);}
+  .kpi.pu::before{background:var(--purple);}
+  .kpi .v{font-weight:700;font-size:3.4cqw;color:var(--cyan);}
+  .kpi .l{font-weight:500;font-size:1cqw;color:var(--grey);margin-top:.6cqh;line-height:1.3;white-space:pre-line;}
+  .bg-navy .kpi{background:var(--navy2);border-color:var(--linen);}
+  .bg-navy .kpi .l{color:var(--ice);}
+
+  /* note box */
+  .note{position:relative;background:var(--icebg);border:1px solid var(--line);padding:1.3cqh 1.4cqw 1.3cqh 1.7cqw;font-size:1cqw;line-height:1.45;}
+  .note::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.5cqw;background:var(--cyan);}
+  .note.pu::before{background:var(--purple);}
+  .note.gold::before{background:var(--gold);}
+  .note.red::before{background:var(--red);}
+  .note b{color:var(--navy);font-weight:600;}
+  .bg-navy .note{background:var(--navy2);border-color:var(--linen);color:var(--ice);}
+  .bg-navy .note b{color:var(--cyan);}
+
+  .source{font-size:.72cqw;color:#8A96A3;font-style:italic;margin-top:1cqh;}
+  .bg-navy .source{color:var(--mute);}
+
+  /* card */
+  .card{position:relative;background:var(--icebg);border:1px solid var(--line);padding:1.5cqh 1.1cqw;}
+  .card::before{content:"";position:absolute;left:0;right:0;top:0;height:.55cqh;}
+  .card.cy::before{background:var(--cyan);}
+  .card.pu::before{background:var(--purple);}
+  .card.green::before{background:var(--green);}
+  .card .ct{font-weight:600;font-size:1.15cqw;color:var(--navy);line-height:1.2;}
+  .card .ct.green{color:var(--green);}
+  .card .cb{font-size:1cqw;color:var(--grey);margin-top:.9cqh;line-height:1.4;}
+  .card .cb ul{margin:0;padding-left:1.1cqw;}
+  .card .cb li{margin-bottom:.4cqh;}
+
+  /* tabelle */
+  table.t{border-collapse:collapse;width:100%;font-size:.95cqw;}
+  table.t th{background:var(--navy);color:var(--white);font-weight:600;text-align:left;padding:.7cqh .7cqw;border:1px solid var(--line);}
+  table.t td{padding:.55cqh .7cqw;border:1px solid var(--line);color:var(--grey);vertical-align:middle;}
+  table.t tr:nth-child(even) td{background:var(--icebg);}
+  table.t tr:nth-child(odd) td{background:var(--white);}
+  td.k{font-weight:600;color:var(--navy);}
+  td.pu{font-weight:600;color:var(--purple);}
+  td.err{background:var(--err-bg)!important;color:var(--red);}
+  td.ok{background:var(--ok-bg)!important;color:var(--green);font-weight:600;}
+  td.center{text-align:center;}
+  td.yes{color:var(--green);font-weight:600;}
+  td.no{color:var(--red);font-weight:600;}
+
+  /* bullet / steps */
+  .blist{list-style:none;padding:0;}
+  .blist li{position:relative;padding-left:1.5cqw;margin-bottom:1.3cqh;font-size:1.08cqw;line-height:1.4;}
+  .blist li::before{content:"";position:absolute;left:0;top:.5cqh;width:.6cqw;height:.6cqw;border-radius:50%;background:var(--cyan);}
+  .blist li:nth-child(even)::before{background:var(--purple);}
+
+  .steps{list-style:none;padding:0;counter-reset:st;}
+  .steps li{position:relative;padding-left:2.6cqw;margin-bottom:1.6cqh;font-size:1.05cqw;line-height:1.4;min-height:1.8cqw;}
+  .steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;width:1.8cqw;height:1.8cqw;border-radius:50%;background:var(--navy);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1cqw;}
+  .steps li:nth-child(even)::before{background:var(--purple);}
+
+  /* index columns */
+  .cols3{display:flex;gap:1.4cqw;height:100%;}
+  .idxcol{flex:1;position:relative;background:var(--icebg);border:1px solid var(--line);padding:1.5cqh 1.1cqw;}
+  .idxcol::before{content:"";position:absolute;left:0;right:0;top:0;height:.55cqh;}
+  .idxcol.cy::before{background:var(--cyan);}
+  .idxcol.pu::before{background:var(--purple);}
+  .idxcol .n{font-weight:700;font-size:2.6cqw;}
+  .idxcol.cy .n{color:var(--cyan);}
+  .idxcol.pu .n{color:var(--purple);}
+  .idxcol .h{font-weight:600;font-size:1.35cqw;color:var(--navy);margin:.4cqh 0 1cqh;}
+  .idxcol ul{list-style:none;padding:0;}
+  .idxcol li{font-size:.98cqw;color:var(--grey);padding-left:1cqw;position:relative;margin-bottom:.55cqh;line-height:1.25;}
+  .idxcol li::before{content:"·";position:absolute;left:.15cqw;color:var(--mute);}
+
+  /* family tree */
+  .tree .parent{background:var(--navy);color:var(--white);font-weight:600;padding:.7cqh 1cqw;display:flex;gap:1cqw;align-items:center;}
+  .tree .parent .tag{color:var(--cyan);font-weight:500;}
+  .tree .kid{position:relative;background:var(--icebg);border:1px solid var(--line);margin:.4cqh 0 .4cqh 1.4cqw;padding:.5cqh 1cqw;font-size:.95cqw;color:var(--navy);display:flex;justify-content:space-between;}
+  .tree .kid::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.3cqw;background:var(--cyan);}
+  .tree .kid:nth-child(even)::before{background:var(--purple);}
+  .tree .kid .tag{color:var(--purple);font-weight:600;}
+
+  /* rules grid */
+  .rules{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4cqw 1.4cqw;}
+  .rule .n{font-weight:700;font-size:2.6cqw;}
+  .rule:nth-child(odd) .n{color:var(--cyan);}
+  .rule:nth-child(even) .n{color:var(--purple);}
+  .rule .rt{font-weight:600;font-size:1.1cqw;color:var(--white);margin:.4cqh 0;}
+  .rule .rd{font-size:.9cqw;color:var(--ice);line-height:1.3;}
+
+  /* checklist */
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:1.4cqh 2cqw;}
+  .check{display:flex;gap:.8cqw;font-size:1cqw;color:var(--grey);line-height:1.35;}
+  .check .box{flex:none;width:1.1cqw;height:1.1cqw;border:.14cqw solid var(--cyan);margin-top:.2cqh;}
+  .check:nth-child(even) .box{border-color:var(--purple);}
+
+  /* equation bar */
+  .eqbar{background:var(--navy);color:var(--ice);text-align:center;padding:1.4cqh 1cqw;font-size:1.5cqw;}
+  .eqbar .cy{color:var(--cyan);font-weight:600;}
+  .eqbar .w{color:var(--white);font-weight:600;}
+
+  /* sources links */
+  .srccol h4{color:var(--purple);font-weight:600;font-size:1.1cqw;margin-bottom:.8cqh;}
+  .srccol ul{list-style:none;padding:0;}
+  .srccol li{margin-bottom:.7cqh;padding-left:1cqw;position:relative;font-size:.95cqw;line-height:1.3;}
+  .srccol li::before{content:"›";position:absolute;left:0;color:var(--cyan);font-weight:700;}
+  .srccol a{color:var(--navy);text-decoration:none;}
+  .srccol a:hover{color:var(--cyan);text-decoration:underline;}
+
+  /* thankyou */
+  .thanks{background:var(--navy);}
+  .thanks h2{position:absolute;left:6.2cqw;top:33cqh;color:var(--white);font-weight:600;font-size:6cqw;}
+  .thanks .rule{position:absolute;left:6.4cqw;top:56cqh;width:17cqw;height:.6cqh;background:var(--cyan);}
+  .thanks .contacts{position:absolute;left:6.4cqw;top:62cqh;}
+  .thanks .contacts div{font-size:1.15cqw;margin-bottom:1cqh;}
+  .thanks .contacts .lb{color:var(--cyan);font-weight:600;margin-right:1cqw;}
+  .thanks .contacts .vl{color:var(--white);}
+  .thanks .bigx{position:absolute;right:8cqw;top:22cqh;font-weight:700;font-size:9cqw;color:var(--white);opacity:.9;}
+  .thanks .bigx .x{color:var(--cyan);}
+
+  /* nav */
+  .pager{position:fixed;bottom:1.4cqh;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,37,61,.72);color:var(--ice);font-size:13px;padding:6px 14px;border-radius:20px;letter-spacing:.05em;font-weight:500;}
+  .navhint{position:fixed;bottom:1.4cqh;right:18px;z-index:20;color:#5b6b7a;font-size:11px;}
+  .arrow{position:fixed;top:0;bottom:0;width:12vw;z-index:15;cursor:pointer;border:0;background:transparent;}
+  .arrow.left{left:0;} .arrow.right{right:0;}
+
+  @media print{ .slide{display:block!important;page-break-after:always;} .pager,.navhint,.arrow{display:none;} }
 </style>
 </head>
 <body>
-<div class="progress" id="progress" aria-hidden="true"></div>
-<main class="deck" id="deck" aria-live="polite">
+<div class="deck">
+  <div class="stage" id="stage">
 
-<!-- 1. COVER -->
-<section class="slide cover" aria-label="Copertina">
-  <div class="kicker">FULCO · Amazon Marketplace Italia</div>
-  <h1>Il flat file SHIRT,<br>dalla teoria alla compilazione</h1>
-  <p>Come funziona il template Amazon che ci ha passato il cliente, quali regole vanno rispettate e come si compila una famiglia di camicie in taglie e colori, con esempi reali e gli errori già presenti nel file.</p>
-  <p class="muted" style="color:#9fb0c8;margin-top:2rem">File di riferimento: <code style="background:#24365c;color:#f3efe4">_data/catalogo/FULCO - Shirt.xlsm</code> · Aggiornato 29/09/2026<span class="screen-only"> · Usa ← → per navigare</span></p>
-</section>
+    <!-- 1. COVER -->
+    <section class="slide active cover">
+      <div class="waves">
+        <svg viewBox="0 0 1000 560" preserveAspectRatio="none">
+          <path d="M0,420 C200,360 350,480 520,420 C700,356 820,470 1000,410" fill="none" stroke="#66CBF2" stroke-width="2" opacity=".55"/>
+          <path d="M0,460 C220,400 360,520 540,455 C720,392 840,505 1000,448" fill="none" stroke="#93609E" stroke-width="2" opacity=".45"/>
+          <path d="M0,500 C240,445 380,560 560,495 C740,432 860,545 1000,490" fill="none" stroke="#66CBF2" stroke-width="1.4" opacity=".3"/>
+        </svg>
+      </div>
+      <div class="brand">SIDEA <span class="x">X</span></div>
+      <h1>Il flat file SHIRT,<br>dalla teoria alla compilazione</h1>
+      <div class="tagline">Onboarding FULCO su Amazon Marketplace Italia</div>
+      <div class="client">FULCO ITALY</div>
+    </section>
 
-<!-- 2. AGENDA -->
-<section class="slide" aria-label="Indice">
-  <div class="kicker">Indice</div>
-  <h2>Il percorso</h2>
-  <ol class="toc" id="toc"></ol>
-</section>
+    <!-- 2. INDICE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Indice</div><div class="title">Il percorso</div></div></div>
+      <div class="content">
+        <div class="cols3">
+          <div class="idxcol cy"><div class="n">01</div><div class="h">Teoria</div>
+            <ul><li>Cos'e un flat file</li><li>Le schede del template</li><li>Livelli di obbligatorieta</li><li>Parent e varianti</li><li>Quante righe servono</li><li>Taglie e colori</li><li>Codici prodotto e immagini</li></ul></div>
+          <div class="idxcol pu"><div class="n">02</div><div class="h">Compilazione guidata</div>
+            <ul><li>Cosa raccogliere prima</li><li>Convenzione SKU</li><li>Riga parent e righe variante</li><li>La riga 8 del cliente</li><li>Regole di consistenza</li><li>Caricamento e checklist</li></ul></div>
+          <div class="idxcol cy"><div class="n">03</div><div class="h">Prossimi passi</div>
+            <ul><li>Quattro decisioni con FULCO</li><li>Fonti ufficiali e guide</li></ul></div>
+        </div>
+      </div>
+    </section>
 
-<!-- ===== PARTE 1 ===== -->
-<section class="slide section" aria-label="Parte 1">
-  <div class="num">01</div>
-  <h1>Teoria</h1>
-  <p>Cosa c'è dentro il file, come ragiona Amazon, quali regole non si possono aggirare.</p>
-</section>
+    <!-- 3. DIVISORE TEORIA -->
+    <section class="slide divider">
+      <div class="logox dark">SIDEA <span class="x">X</span></div>
+      <div class="num">01.</div>
+      <div class="eyebrow">Parte prima</div>
+      <div class="title">Teoria: come ragiona Amazon</div>
+    </section>
 
-<section class="slide" data-title="Cos'è un flat file" aria-label="Cos'è un flat file">
-  <div class="kicker">Teoria · 1</div>
-  <h2>Cos'è un flat file</h2>
-  <div class="grid g2">
-    <div>
-      <p>È un foglio Excel costruito da Amazon <strong>su misura per una categoria</strong>. Ogni riga è uno SKU, ogni colonna un attributo del prodotto.</p>
-      <p>Si scarica da <code>Catalogo › Aggiungi prodotti tramite caricamento</code>: Amazon include solo gli attributi pertinenti al product type scelto. Il nostro è <code>SHIRT</code>, marketplace Italia, lingua <code>it_IT</code>.</p>
-      <p>Un file può contenere fino a <strong>10.000 righe</strong>.</p>
-    </div>
-    <div class="grid g3">
-      <div class="card"><div class="big">288</div><p>colonne nella scheda Modello</p></div>
-      <div class="card"><div class="big">204</div><p>attributi documentati</p></div>
-      <div class="card"><div class="big">10</div><p>schede nel file .xlsm</p></div>
-    </div>
+    <!-- 4. COS'E UN FLAT FILE -->
+    <section class="slide bg-navy">
+      <div class="logox dark">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 1</div><div class="title">Cos'e un flat file</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:2.5cqw;">
+          <div style="flex:1.05;">
+            <p class="lead">E un foglio Excel costruito da Amazon <strong>su misura per una categoria</strong>: ogni riga e uno SKU, ogni colonna un attributo del prodotto.</p>
+            <p class="lead" style="margin-top:1.6cqh;">Si scarica da Catalogo › Aggiungi prodotti tramite caricamento e contiene solo gli attributi del product type scelto. Il nostro e <span class="hl-cy">SHIRT</span>, marketplace Italia, lingua it_IT.</p>
+            <p class="lead" style="margin-top:1.6cqh;">Un file puo contenere fino a <strong>10.000 righe</strong>.</p>
+          </div>
+          <div style="flex:.85;display:flex;flex-direction:column;gap:1.2cqh;">
+            <div class="statbox cy" style="height:11cqh;"><div class="v">288</div><div class="l">colonne nella scheda Modello</div></div>
+            <div class="statbox pu" style="height:11cqh;"><div class="v">204</div><div class="l">attributi documentati</div></div>
+            <div class="statbox cy" style="height:11cqh;"><div class="v">10</div><div class="l">schede nel file .xlsm</div></div>
+          </div>
+        </div>
+        <div class="source">Fonte: Seller Central, Build your inventory file (G581); analisi del file FULCO - Shirt.xlsm.</div>
+      </div>
+    </section>
+
+    <!-- 5. LE SCHEDE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 2</div><div class="title">Le schede del template</div></div></div>
+      <div class="content">
+        <table class="t">
+          <tr><th style="width:20%">Scheda</th><th style="width:52%">A cosa serve</th><th style="width:28%">La tocchiamo?</th></tr>
+          <tr><td class="k">Modello</td><td>Dove si inseriscono i dati, una riga per SKU</td><td class="yes">Si, dalla riga 8</td></tr>
+          <tr><td class="k">Definizioni dati</td><td>Spiega ogni attributo e dice se e obbligatorio</td><td>Solo consultazione</td></tr>
+          <tr><td class="k">Valori validi</td><td>Gli unici valori ammessi nei campi a tendina</td><td>Solo consultazione</td></tr>
+          <tr><td class="k">Immagini</td><td>Standard fotografici</td><td>Solo consultazione</td></tr>
+          <tr><td class="k">Altre 6 schede</td><td>Istruzioni, Esplora dati, Dropdown Lists, Conditions List, AttributePTDMAP, Modifiche al modello: supporto e macro</td><td class="no">No</td></tr>
+        </table>
+        <div class="note" style="margin-top:2.5cqh;"><b>Le righe 1-7 della scheda Modello non si modificano.</b> La riga 1 contiene i parametri con cui Amazon legge il file: etichette in riga 4, nomi tecnici in riga 5, dati dalla riga 8.</div>
+      </div>
+    </section>
+
+    <!-- 6. OBBLIGATORIETA -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 3</div><div class="title">Quattro livelli di obbligatorieta</div></div></div>
+      <div class="content">
+        <div class="kpirow">
+          <div class="kpi cy"><div class="v">9</div><div class="l">Obbligatori
+Senza, riga rifiutata</div></div>
+          <div class="kpi pu"><div class="v">50</div><div class="l">Condizionali
+Legati ad altri campi</div></div>
+          <div class="kpi cy"><div class="v">14</div><div class="l">Consigliati
+Per filtri e visibilita</div></div>
+          <div class="kpi pu"><div class="v">131</div><div class="l">Facoltativi
+Arricchiscono la scheda</div></div>
+        </div>
+        <div class="note pu" style="margin-top:3cqh;"><b>Riflessione.</b> "Obbligatorio a determinate condizioni" non vuol dire opzionale. Su una camicia con varianti, taglia, colore, prezzo e disponibilita sono condizionali solo sulla carta.</div>
+      </div>
+    </section>
+
+    <!-- 7. PARENT E VARIANTI -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 4</div><div class="title">Variazioni: parent e varianti</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:2.5cqw;">
+          <div style="flex:1;">
+            <p class="lead" style="color:var(--grey);">Una camicia venduta in piu taglie e colori diventa una <span class="hl-navy">famiglia</span> su un'unica pagina prodotto.</p>
+            <p class="lead" style="color:var(--grey);margin-top:1.4cqh;"><span class="hl-navy">Parent</span> la pagina. Non si compra. Niente taglia, colore, EAN, prezzo o stock.</p>
+            <p class="lead" style="color:var(--grey);margin-top:1.4cqh;"><span class="hl-pu">Variante</span> una riga per ogni combinazione taglia × colore, con SKU, EAN, prezzo e stock propri.</p>
+            <p class="lead" style="color:var(--grey);margin-top:1.4cqh;">Le varianti condividono le recensioni del parent: anche le meno vendute beneficiano della reputazione della famiglia.</p>
+          </div>
+          <div style="flex:1;" class="tree">
+            <div class="parent">FUL-OXSLIM <span class="tag">Articolo parent</span></div>
+            <div class="kid"><span>FUL-OXSLIM-BIA-S</span><span class="tag">Variante</span></div>
+            <div class="kid"><span>FUL-OXSLIM-BIA-M</span><span class="tag">Variante</span></div>
+            <div class="kid"><span>FUL-OXSLIM-BIA-L</span><span class="tag">Variante</span></div>
+            <div class="kid"><span>FUL-OXSLIM-AZZ-S</span><span class="tag">Variante</span></div>
+            <div class="kid" style="justify-content:center;color:var(--mute);">…</div>
+            <div class="kid"><span>FUL-OXSLIM-ROS-XXL</span><span class="tag">Variante</span></div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:2cqh;"><b>Due valori da ricordare.</b> Tema di variazione FORMATO/COLORE. Livello di parentela: Articolo parent sul parent, Bambino sulle varianti. Nel testo diciamo "variante", ma nella cella Excel va scritto esattamente Bambino: e il valore fisso del template italiano.</div>
+      </div>
+    </section>
+
+    <!-- 8. QUANTE RIGHE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 5</div><div class="title">Quante righe servono</div></div></div>
+      <div class="content">
+        <div class="eqbar">righe = <span class="w">1 parent</span> + ( numero taglie × numero colori ) <span class="cy">varianti</span></div>
+        <table class="t" style="margin-top:2cqh;">
+          <tr><th style="width:47%">Modello</th><th>Taglie</th><th>Colori</th><th>Righe</th></tr>
+          <tr><td>Oxford Slim</td><td>5 (S-XXL)</td><td>3</td><td class="k">16</td></tr>
+          <tr><td>Popeline classica</td><td>8 (38-45)</td><td>4</td><td class="k">33</td></tr>
+          <tr><td>Catalogo di 20 modelli, media 5 × 3</td><td>-</td><td>-</td><td class="k">320</td></tr>
+        </table>
+        <div class="source">Modelli e numeri illustrativi, non dati del cliente.</div>
+        <div class="note pu" style="margin-top:1.6cqh;"><b>Riflessione.</b> Ogni variante richiede un EAN. Il numero di righe e anche il numero di barcode che FULCO deve avere.</div>
+      </div>
+    </section>
+
+    <!-- 9. TAGLIE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 6</div><div class="title">Taglie: tre campi, regole rigide</div></div></div>
+      <div class="content">
+        <table class="t">
+          <tr><th style="width:26%">Campo</th><th>Valori ammessi nel template</th></tr>
+          <tr><td class="k">Sistema delle taglie</td><td>Solo IT</td></tr>
+          <tr><td class="k">Formato delle taglie</td><td>Testo · Numero · Eta · Taglia collo · Manica e collo · Numeric Height · Alpha JASPO · Numeric GO</td></tr>
+          <tr><td class="k">Taglia abbigliamento</td><td>Il valore, coerente con il formato scelto</td></tr>
+        </table>
+        <div style="display:flex;gap:1.4cqw;margin-top:2cqh;">
+          <div class="card cy" style="flex:1;"><div class="ct">Taglie a lettere → formato Testo</div><div class="cb">XS (x_s)   S (s)   M (m)   L (l)   XL   XXL (xx_l)   3XL</div></div>
+          <div class="card pu" style="flex:1;"><div class="ct">Taglia collo → formato Taglia collo</div><div class="cb">36   37   38   39   40   41   42   …   46  (cm)</div></div>
+        </div>
+        <div class="note gold" style="margin-top:1.8cqh;"><b>Trappola.</b> "M" da sola non e un valore valido: nel template la taglia e M (m). Le regole taglia valgono su tutto il catalogo e Amazon riformatta i valori non conformi.</div>
+        <div class="source">Fonti: SP-API Guidance for Complex Attributes; scheda Valori validi del template.</div>
+      </div>
+    </section>
+
+    <!-- 10. COLORE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 7</div><div class="title">Colore: nome commerciale e mappa</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:1.4cqw;">
+          <div class="card cy" style="flex:1;"><div class="ct">Colore</div><div class="cb">Testo libero, il nome con cui FULCO vende il colore: Azzurro cielo, Bianco ottico, Rosa antico.</div></div>
+          <div class="card pu" style="flex:1;"><div class="ct">Mappa dei colori</div><div class="cb">Uno dei 20 valori standard che alimentano i filtri. Esempio: Azzurro cielo → Blu.</div></div>
+        </div>
+        <div id="swatches" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.6cqh 1cqw;margin-top:2cqh;"></div>
+        <div class="note pu" style="margin-top:1.6cqh;"><b>Riflessione.</b> Il nome commerciale vende, la mappa fa trovare. Un "Celeste" mappato come "Chiaro" non comparirebbe tra le camicie blu.</div>
+      </div>
+    </section>
+
+    <!-- 11. CODICI PRODOTTO -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 8</div><div class="title">Codici prodotto: EAN e GTIN</div></div></div>
+      <div class="content">
+        <p style="font-size:1.05cqw;color:var(--grey);">Tipi ammessi dal template:   <span class="hl-pu">EAN · GTIN · UPC · ASIN · MINSAN · Esenzione GTIN</span></p>
+        <div style="display:flex;gap:1.4cqw;margin-top:1.6cqh;">
+          <div class="card green" style="flex:1;"><div class="ct green">Strada consigliata: EAN GS1</div><div class="cb"><ul><li>Un codice per ogni combinazione taglia/colore</li><li>Rilasciato da GS1 a nome dell'azienda</li><li>Vale anche per altri marketplace e per il retail</li></ul></div></div>
+          <div class="card cy" style="flex:1;"><div class="ct">Alternativa: esenzione GTIN</div><div class="cb"><ul><li>Si chiede in Seller Central per brand e categoria</li><li>Gratuita, non scade</li><li>Soluzione di breve periodo</li></ul></div></div>
+        </div>
+        <div class="note red" style="margin-top:1.8cqh;"><b>Da evitare.</b> Barcode acquistati da rivenditori terzi. Amazon controlla il database GS1: un prefisso che non corrisponde all'azienda crea problemi all'account.</div>
+        <div class="source">Fonti: forum Seller Central; Goat Consulting; barcode.graphics.</div>
+      </div>
+    </section>
+
+    <!-- 12. IMMAGINI -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Teoria · 9</div><div class="title">Immagini: le regole della foto principale</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:2.2cqw;">
+          <ul class="blist" style="flex:1;">
+            <li>Sfondo bianco puro RGB 255, 255, 255</li>
+            <li>Prodotto su almeno l'85% del frame</li>
+            <li>Lato lungo ≥ 1.000 px per lo zoom, meglio 1.600+</li>
+            <li>JPG in sRGB, massimo 10.000 px e 10 MB</li>
+            <li>Niente testo, loghi, watermark o accessori non venduti</li>
+          </ul>
+          <div class="card pu" style="flex:.9;align-self:flex-start;"><div class="ct">Come le controlla Amazon</div><div class="cb">Un controllo automatico su angoli, dimensioni e presenza di testo, piu un controllo manuale su segnalazione. Un'immagine non conforme sospende il listing.</div></div>
+        </div>
+        <div class="note" style="margin-top:1.6cqh;"><b>Per FULCO.</b> Ogni colore ha la sua foto principale. Nel template le immagini si inseriscono come URL pubblici, non come file allegati.</div>
+        <div class="source">Fonti: Seller Central G1881; Amazon Fashion/Apparel Imaging Guidelines (PDF); jpg.now.</div>
+      </div>
+    </section>
+
+    <!-- 13. DIVISORE COMPILAZIONE -->
+    <section class="slide divider">
+      <div class="logox dark">SIDEA <span class="x">X</span></div>
+      <div class="num">02.</div>
+      <div class="eyebrow">Parte seconda</div>
+      <div class="title">Compilazione guidata</div>
+    </section>
+
+    <!-- 14. PRIMA DI APRIRE EXCEL -->
+    <section class="slide bg-navy">
+      <div class="logox dark">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 1</div><div class="title">Prima di aprire Excel</div></div></div>
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2.5cqh 2.2cqw;">
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--cyan);">01</div><div style="height:.35cqh;width:2.4cqw;background:var(--cyan);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Modelli</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">Elenco dei modelli con taglie e colori disponibili per ciascuno</div></div>
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--purple);">02</div><div style="height:.35cqh;width:2.4cqw;background:var(--purple);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Barcode</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">EAN GS1 per ogni combinazione, oppure la decisione sull'esenzione</div></div>
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--cyan);">03</div><div style="height:.35cqh;width:2.4cqw;background:var(--cyan);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Prezzi e stock</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">Prezzo IVA inclusa e quantita per ogni variante</div></div>
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--purple);">04</div><div style="height:.35cqh;width:2.4cqw;background:var(--purple);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Testi</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">Titolo, 5 punti elenco e descrizione per modello</div></div>
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--cyan);">05</div><div style="height:.35cqh;width:2.4cqw;background:var(--cyan);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Immagini</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">URL pubblici, una foto principale per colore</div></div>
+          <div><div style="font-weight:700;font-size:2cqw;color:var(--purple);">06</div><div style="height:.35cqh;width:2.4cqw;background:var(--purple);margin:.4cqh 0;"></div><div style="font-weight:600;font-size:1.25cqw;color:var(--white);">Canale</div><div style="font-size:1cqw;color:var(--ice);margin-top:.5cqh;line-height:1.35;">Gestito dal venditore oppure Logistica di Amazon (UE)</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. CONVENZIONE SKU -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 2</div><div class="title">Una convenzione SKU leggibile</div></div></div>
+      <div class="content">
+        <div style="background:var(--navy);color:var(--ice);display:flex;align-items:center;padding:.7cqh 1cqw;gap:1cqw;font-size:1.05cqw;"><span style="color:var(--cyan);font-weight:600;width:8cqw;letter-spacing:.08em;">PARENT</span><span style="flex:1;">FUL-&lt;MODELLO&gt;</span><span style="color:var(--white);font-weight:600;">FUL-OXSLIM</span></div>
+        <div style="background:var(--navy);color:var(--ice);display:flex;align-items:center;padding:.7cqh 1cqw;gap:1cqw;font-size:1.05cqw;margin-top:.5cqh;"><span style="color:var(--purple);font-weight:600;width:8cqw;letter-spacing:.08em;">VARIANTE</span><span style="flex:1;">FUL-&lt;MODELLO&gt;-&lt;COLORE&gt;-&lt;TAGLIA&gt;</span><span style="color:var(--white);font-weight:600;">FUL-OXSLIM-BIA-M</span></div>
+        <table class="t" style="margin-top:2cqh;">
+          <tr><th style="width:26%">Codice colore</th><th>Colore commerciale</th><th>Mappa dei colori</th></tr>
+          <tr><td class="pu">BIA</td><td>Bianco ottico</td><td>Bianco</td></tr>
+          <tr><td class="pu">AZZ</td><td>Azzurro cielo</td><td>Blu</td></tr>
+          <tr><td class="pu">ROS</td><td>Rosa antico</td><td>Rosa</td></tr>
+        </table>
+        <div class="note" style="margin-top:1.8cqh;"><b>Perche conta.</b> Leggendo lo SKU si capisce subito modello, colore e taglia. Nel Processing Report gli errori sono elencati per SKU: una convenzione chiara fa risparmiare tempo.</div>
+      </div>
+    </section>
+
+    <!-- 16. RIGA PARENT -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 3</div><div class="title">La riga parent</div></div></div>
+      <div class="content">
+        <table class="t">
+          <tr><th style="width:34%">Campo</th><th>Valore di esempio</th></tr>
+          <tr><td class="k">SKU</td><td class="pu">FUL-OXSLIM</td></tr>
+          <tr><td class="k">Tipo di prodotto</td><td class="pu">SHIRT</td></tr>
+          <tr><td class="k">Livello di parentela</td><td class="pu">Articolo parent</td></tr>
+          <tr><td class="k">Variazione del Tema del Nome</td><td class="pu">FORMATO/COLORE</td></tr>
+          <tr><td class="k">Nome dell'articolo</td><td>FULCO ITALY Camicia Uomo Oxford Slim Fit 100% Cotone Made in Italy</td></tr>
+          <tr><td class="k">Nome del marchio · Produttore</td><td>FULCO ITALY · Fulco Italy</td></tr>
+          <tr><td class="k">Descrizione · Punti elenco</td><td>Testi del modello</td></tr>
+          <tr><td class="err" style="font-weight:600;">Taglia, colore, EAN, prezzo, quantita</td><td class="err" style="font-weight:600;">Vuoti</td></tr>
+        </table>
+        <div class="note pu" style="margin-top:1.8cqh;"><b>Riflessione.</b> Il parent descrive il modello. Tutto cio che cambia da una variante all'altra va sulle righe variante.</div>
+      </div>
+    </section>
+
+    <!-- 17. RIGHE VARIANTE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 4</div><div class="title">Le righe variante</div></div></div>
+      <div class="content">
+        <table class="t" style="font-size:.72cqw;">
+          <tr><th>SKU</th><th>SKU Parent</th><th>Parentela*</th><th>Formato</th><th>Taglia</th><th>Colore</th><th>Mappa</th><th>Tipo ID</th><th>ID</th><th>Prezzo</th><th>Qta</th></tr>
+          <tr><td class="k">FUL-OXSLIM-BIA-S</td><td>FUL-OXSLIM</td><td class="pu">Bambino</td><td>Testo</td><td class="pu">S (s)</td><td>Bianco ottico</td><td>Bianco</td><td>EAN</td><td>80…001</td><td>79,00</td><td>10</td></tr>
+          <tr><td class="k">FUL-OXSLIM-BIA-M</td><td>FUL-OXSLIM</td><td class="pu">Bambino</td><td>Testo</td><td class="pu">M (m)</td><td>Bianco ottico</td><td>Bianco</td><td>EAN</td><td>80…002</td><td>79,00</td><td>15</td></tr>
+          <tr><td class="k">FUL-OXSLIM-AZZ-M</td><td>FUL-OXSLIM</td><td class="pu">Bambino</td><td>Testo</td><td class="pu">M (m)</td><td>Azzurro cielo</td><td>Blu</td><td>EAN</td><td>80…005</td><td>79,00</td><td>12</td></tr>
+        </table>
+        <div class="source">EAN, prezzi e quantita sono segnaposto. * Parentela: il valore da inserire e Bambino, l'unico accettato dal template per le varianti.</div>
+        <p style="font-weight:600;font-size:1.15cqw;color:var(--navy);margin-top:1.4cqh;">Su ogni variante vanno ripetuti anche</p>
+        <p style="font-size:1cqw;color:var(--grey);margin-top:.5cqh;line-height:1.45;">Tema di variazione, marchio, produttore, sistema taglie IT, attributi della camicia (colletto, tessuto, vestibilita, tessitura), condizione Nuovo, canale, dimensioni del pacco, paese di origine, URL immagine.</p>
+        <div class="note" style="margin-top:1.4cqh;"><b>Titolo della variante.</b> La definizione del template chiede marchio, colore, vestibilita e taglia. Esempio: FULCO ITALY Camicia Uomo Oxford Slim Fit Bianco ottico M.</div>
+      </div>
+    </section>
+
+    <!-- 18. RIGA 8 DEL CLIENTE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 5 · Caso reale</div><div class="title">La riga 8 del cliente: 7 valori da correggere</div></div></div>
+      <div class="content">
+        <table class="t" style="font-size:.85cqw;">
+          <tr><th style="width:22%">Campo</th><th style="width:24%">Inserito</th><th style="width:23%">Problema</th><th style="width:31%">Correzione proposta</th></tr>
+          <tr><td class="k">Stile del colletto</td><td class="err">Collo francese</td><td>Non esiste nell'elenco</td><td class="ok">Colletto semi francese o Collo cutaway</td></tr>
+          <tr><td class="k">Stile</td><td class="err">Elegante, Formale, Business Casual</td><td>Tre valori in una cella</td><td class="ok">Classico</td></tr>
+          <tr><td class="k">Fascia di eta</td><td class="err">Adulto, Ragazzo</td><td>Due valori in una cella</td><td class="ok">Adulto</td></tr>
+          <tr><td class="k">Nome del tipo di prodotto</td><td class="err">Camicia</td><td>Non in elenco</td><td class="ok">Camicia elegante o Camicia button-down</td></tr>
+          <tr><td class="k">Tema</td><td class="err">Elegante e Versatile</td><td>L'elenco e per soggetti grafici</td><td class="ok">Vuoto</td></tr>
+          <tr><td class="k">Caratteristica dell'ornamento</td><td class="err">Carre sul dietro</td><td>L'elenco e per decorazioni</td><td class="ok">Vuoto, citarlo nei bullet</td></tr>
+          <tr><td class="k">Stile pezzo sopra</td><td class="err">Camicia casual</td><td>L'elenco e per silhouette</td><td class="ok">Vuoto</td></tr>
+        </table>
+        <div class="source">Gli altri 21 valori della riga sono corretti. Verifica cella per cella contro la scheda Valori validi di FULCO - Shirt.xlsm.</div>
+      </div>
+    </section>
+
+    <!-- 19. COSA INSEGNA LA RIGA 8 -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 6 · Riflessioni</div><div class="title">Cosa ci insegna la riga 8</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:1.4cqw;">
+          <div class="card cy" style="flex:1;"><div class="ct">Una tendina non e una descrizione</div><div class="cb">"Business Casual" o "Carre sul dietro" sono informazioni utili, ma il loro posto e nei bullet e nella descrizione, dove il cliente le legge.</div></div>
+          <div class="card pu" style="flex:1;"><div class="ct">Un valore per cella</div><div class="cb">Nei campi a tendina non si elencano piu valori separati da virgole. Si sceglie quello che descrive meglio il prodotto.</div></div>
+          <div class="card cy" style="flex:1;"><div class="ct">Il nome di un campo puo ingannare</div><div class="cb">"Tema" e "Stile pezzo sopra" sembrano adatti a una camicia elegante, ma i loro elenchi parlano d'altro. Prima di scrivere, si apre Valori validi.</div></div>
+        </div>
+        <div class="note gold" style="margin-top:2cqh;"><b>Da chiedere a FULCO.</b> Cosa intendono con "collo francese". In sartoria indica spesso un collo semi francese o cutaway, ma la scelta deve essere loro.</div>
+      </div>
+    </section>
+
+    <!-- 20. SETTE REGOLE -->
+    <section class="slide bg-navy">
+      <div class="logox dark">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 7</div><div class="title">Sette regole per non farsi rifiutare il file</div></div></div>
+      <div class="content">
+        <div class="rules">
+          <div class="rule"><div class="n">01</div><div class="rt">Parent coerente</div><div class="rd">SKU articolo Parent di ogni variante identico allo SKU del parent</div></div>
+          <div class="rule"><div class="n">02</div><div class="rt">Tema completo</div><div class="rd">Con FORMATO/COLORE ogni variante ha taglia e colore, senza coppie ripetute</div></div>
+          <div class="rule"><div class="n">03</div><div class="rt">EAN unici</div><div class="rd">Un EAN per SKU, mai ripetuto</div></div>
+          <div class="rule"><div class="n">04</div><div class="rt">SKU unici</div><div class="rd">Nessun SKU duplicato nel catalogo</div></div>
+          <div class="rule"><div class="n">05</div><div class="rt">Valori esatti</div><div class="rd">Tendine copiate identiche, parentesi comprese: M (m)</div></div>
+          <div class="rule"><div class="n">06</div><div class="rt">Un valore per campo</div><div class="rd">Mai elenchi separati da virgole nelle tendine</div></div>
+          <div class="rule"><div class="n">07</div><div class="rt">Sistema IT</div><div class="rd">Sistema delle taglie sempre IT</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 21. CARICARE E CORREGGERE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 8</div><div class="title">Caricare e correggere</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:2.2cqw;">
+          <ol class="steps" style="flex:1;">
+            <li>Salvare nel formato del template (.xlsm)</li>
+            <li>Caricare da Aggiungi prodotti tramite caricamento</li>
+            <li>Aprire il Processing Report: errori bloccanti e avvisi, elencati per SKU</li>
+            <li>Correggere e ricaricare</li>
+          </ol>
+          <div class="card pu" style="flex:.9;align-self:flex-start;"><div class="ct">Aggiornare listing esistenti</div><div class="cb">Compilare solo lo SKU e i campi da cambiare, con Azione sull'offerta = Modifica (aggiornamento parziale). Cosi non si sovrascrivono dati corretti.</div></div>
+        </div>
+        <div class="note" style="margin-top:1.6cqh;"><b>Consiglio pratico.</b> Il primo caricamento si fa con un solo modello: un parent e le sue varianti. Gli errori di impostazione emergono subito e si correggono prima di replicarli su tutto il catalogo.</div>
+      </div>
+    </section>
+
+    <!-- 22. CHECKLIST -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Compilazione · 9</div><div class="title">Checklist prima del caricamento</div></div></div>
+      <div class="content">
+        <div class="checks">
+          <div class="check"><span class="box"></span><span>9 obbligatori: SKU, Tipo prodotto, SKU Parent, Tema, Titolo, Marchio, Tipo ID, ID prodotto, Produttore</span></div>
+          <div class="check"><span class="box"></span><span>Prezzo IVA inclusa, canale, quantita, condizione Nuovo</span></div>
+          <div class="check"><span class="box"></span><span>Taglia: sistema IT, formato e valore corretto</span></div>
+          <div class="check"><span class="box"></span><span>Descrizione e punti elenco</span></div>
+          <div class="check"><span class="box"></span><span>Colore e mappa dei colori</span></div>
+          <div class="check"><span class="box"></span><span>URL immagine principale per ogni variante</span></div>
+          <div class="check"><span class="box"></span><span>I 7 valori della riga 8 corretti</span></div>
+          <div class="check"><span class="box"></span><span>Nessuna tendina con valori separati da virgole</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23. DECISIONI APERTE -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Prossimi passi</div><div class="title">Quattro decisioni da prendere con FULCO</div></div></div>
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2cqw;">
+          <div class="card cy"><div style="font-weight:700;font-size:2cqw;color:var(--cyan);">01</div><div class="ct" style="margin-top:.4cqh;">Barcode</div><div class="cb">EAN GS1 gia disponibili o esenzione GTIN?</div></div>
+          <div class="card pu"><div style="font-weight:700;font-size:2cqw;color:var(--purple);">02</div><div class="ct" style="margin-top:.4cqh;">Formato taglia</div><div class="cb">Lettere (S/M/L) o taglia collo (39/40/41)? Con entrambi possono servire caricamenti separati.</div></div>
+          <div class="card cy"><div style="font-weight:700;font-size:2cqw;color:var(--cyan);">03</div><div class="ct" style="margin-top:.4cqh;">Colletto</div><div class="cb">Quale valore dell'elenco corrisponde al loro "collo francese"?</div></div>
+          <div class="card pu"><div style="font-weight:700;font-size:2cqw;color:var(--purple);">04</div><div class="ct" style="margin-top:.4cqh;">Logistica</div><div class="cb">Spedizione propria o Logistica di Amazon (FBA)?</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24. FONTI -->
+    <section class="slide bg-white">
+      <div class="logox light">SIDEA <span class="x">X</span></div>
+      <div class="head"><div class="bar"></div><div><div class="eyebrow">Riferimenti</div><div class="title">Fonti</div></div></div>
+      <div class="content">
+        <div style="display:flex;gap:2.5cqw;">
+          <div class="srccol" style="flex:1;">
+            <h4>Ufficiali Amazon</h4>
+            <ul>
+              <li><a href="https://sellercentral.amazon.com/help/hub/reference/external/G581?locale=en-US" target="_blank" rel="noopener">Build your inventory file (G581)</a></li>
+              <li><a href="https://sellercentral.amazon.com/help/hub/reference/external/G1881?locale=en-US" target="_blank" rel="noopener">Product image guide (G1881)</a></li>
+              <li><a href="https://developer-docs.amazon.com/sp-api/lang-en_EN/docs/listings-items-guidance-for-complex-attributes" target="_blank" rel="noopener">SP-API, Guidance for Complex Attributes</a></li>
+              <li><a href="https://m.media-amazon.com/images/G/01/SPIS/Fashion_Apparel_Imaging_Guidelines_Spring_2021.pdf" target="_blank" rel="noopener">Fashion/Apparel Imaging Guidelines (PDF)</a></li>
+              <li><a href="https://images-na.ssl-images-amazon.com/images/G/02/rainier/help/Apparel_Size_Quality_EU_UK.pdf" target="_blank" rel="noopener">Apparel Size Quality EU/UK (PDF)</a></li>
+            </ul>
+          </div>
+          <div class="srccol" style="flex:1;">
+            <h4>Guide di settore</h4>
+            <ul>
+              <li><a href="https://www.goatconsulting.com/amazon-product-id/amazon-product-id-exemption" target="_blank" rel="noopener">Goat Consulting, Product ID Exemption</a></li>
+              <li><a href="https://www.barcode.graphics/amazon-gtin-exemption/" target="_blank" rel="noopener">barcode.graphics, GTIN Exemption</a></li>
+              <li><a href="https://support.storeautomator.com/hc/en-us/articles/4406848817682-New-Apparel-Size-Requirements-for-Amazon" target="_blank" rel="noopener">StoreAutomator, Apparel Size Requirements</a></li>
+              <li><a href="https://jpg.now/blog/amazon-seller-image-requirements-cheatsheet" target="_blank" rel="noopener">jpg.now, Image Requirements</a></li>
+              <li><a href="https://flatfile.pro/ffp/amazon-flat-file-variations/" target="_blank" rel="noopener">flatfile.pro, Flat file variations</a></li>
+              <li><a href="https://jarvio.io/blog/amazon-variations-parent-child" target="_blank" rel="noopener">Jarvio, Parent-Child Variations</a></li>
+              <li><a href="https://feedvisor.com/university/bulk-listing/" target="_blank" rel="noopener">Feedvisor, Bulk Listing Guide 2026</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="source">I contenuti delle fonti sono stati riformulati. Valori validi e verifica della riga 8 provengono da FULCO - Shirt.xlsm.</div>
+      </div>
+    </section>
+
+    <!-- 25. CHIUSURA -->
+    <section class="slide thanks">
+      <div class="waves">
+        <svg viewBox="0 0 1000 560" preserveAspectRatio="none">
+          <path d="M0,420 C200,360 350,480 520,420 C700,356 820,470 1000,410" fill="none" stroke="#66CBF2" stroke-width="2" opacity=".5"/>
+          <path d="M0,460 C220,400 360,520 540,455 C720,392 840,505 1000,448" fill="none" stroke="#93609E" stroke-width="2" opacity=".4"/>
+        </svg>
+      </div>
+      <div class="bigx">SIDEA <span class="x">X</span></div>
+      <h2>Domande?</h2>
+      <div class="rule"></div>
+      <div class="contacts">
+        <div><span class="lb">Cliente</span><span class="vl">FULCO ITALY</span></div>
+        <div><span class="lb">Progetto</span><span class="vl">Onboarding Amazon Marketplace IT</span></div>
+        <div><span class="lb">File</span><span class="vl">FULCO - Shirt.xlsm</span></div>
+      </div>
+    </section>
+
   </div>
-  <p class="muted" style="margin-top:1rem">Fonte: Seller Central, "Build your inventory file" (G581); analisi del file del cliente.</p>
-</section>
+</div>
 
-<section class="slide" data-title="Le schede del template" aria-label="Le schede del template">
-  <div class="kicker">Teoria · 2</div>
-  <h2>Le schede del template</h2>
-  <table>
-    <thead><tr><th>Scheda</th><th>A cosa serve</th><th>La tocchiamo?</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Modello</strong></td><td>Dove si inseriscono i dati, una riga per SKU</td><td class="ok">Sì, dalla riga 8</td></tr>
-      <tr><td>Definizioni dati</td><td>Spiega ogni attributo e dice se è obbligatorio</td><td>Solo consultazione</td></tr>
-      <tr><td>Valori validi</td><td>Gli unici valori ammessi nei campi a tendina</td><td>Solo consultazione</td></tr>
-      <tr><td>Immagini</td><td>Standard fotografici</td><td>Solo consultazione</td></tr>
-      <tr><td>Istruzioni, Esplora dati, Dropdown Lists, Conditions List, AttributePTDMAP, Modifiche al modello</td><td>Supporto e logica delle macro</td><td class="ko">No</td></tr>
-    </tbody>
-  </table>
-  <div class="note"><strong>Le righe 1–7 della scheda Modello non si modificano.</strong> La riga 1 contiene i parametri con cui Amazon legge il file: etichette in riga 4, nomi tecnici in riga 5, dati dalla riga 8.</div>
-</section>
-
-<section class="slide" data-title="Livelli di obbligatorietà" aria-label="Livelli di obbligatorietà">
-  <div class="kicker">Teoria · 3</div>
-  <h2>Quattro livelli di obbligatorietà</h2>
-  <div class="grid g2">
-    <div class="card"><div class="big">9</div><h3>Obbligatorio</h3><p>Se manca, la riga viene rifiutata.</p></div>
-    <div class="card"><div class="big">50</div><h3>Obbligatorio a determinate condizioni</h3><p>Diventa obbligatorio in base ad altri campi. Per le camicie sono di fatto tutti quelli su taglia, colore, prezzo e disponibilità.</p></div>
-    <div class="card"><div class="big">14</div><h3>Consigliato</h3><p>Non blocca il caricamento ma incide su filtri e visibilità.</p></div>
-    <div class="card"><div class="big">131</div><h3>Facoltativo</h3><p>Arricchimento della scheda.</p></div>
-  </div>
-  <div class="note"><strong>Riflessione:</strong> "obbligatorio a determinate condizioni" non va letto come "opzionale". Su una camicia con variazioni, taglia e colore sono condizionali solo sulla carta.</div>
-</section>
-
-<section class="slide" data-title="Variazioni: parent e varianti" aria-label="Variazioni: parent e varianti">
-  <div class="kicker">Teoria · 4</div>
-  <h2>Variazioni: parent e varianti</h2>
-  <div class="grid g2">
-    <div>
-      <p>Una camicia venduta in più taglie e colori diventa una <strong>famiglia</strong> su un'unica pagina prodotto.</p>
-      <ul>
-        <li><strong>Parent</strong>: la pagina. Non si compra. Niente taglia, colore, EAN, prezzo o stock.</li>
-        <li><strong>Variante</strong>: una riga per ogni combinazione taglia×colore, con SKU, EAN, prezzo e stock propri.</li>
-      </ul>
-      <p>Le varianti condividono le recensioni del parent: anche quelle meno vendute beneficiano della reputazione dell'intera famiglia.</p>
-    </div>
-    <div class="tree" aria-label="Esempio di famiglia">
-      <div class="p">FUL-OXSLIM · Articolo parent</div>
-      <div class="c">├─ FUL-OXSLIM-BIA-S · Variante</div>
-      <div class="c">├─ FUL-OXSLIM-BIA-M · Variante</div>
-      <div class="c">├─ FUL-OXSLIM-BIA-L · Variante</div>
-      <div class="c">├─ FUL-OXSLIM-AZZ-S · Variante</div>
-      <div class="c">├─ …</div>
-      <div class="c">└─ FUL-OXSLIM-ROS-XXL · Variante</div>
-    </div>
-  </div>
-  <div class="note"><strong>Due valori da ricordare:</strong> tema di variazione <code>FORMATO/COLORE</code>; livello di parentela <code>Articolo parent</code> sul parent e <code>Bambino</code> sulle varianti. Nel testo usiamo "variante", ma nella cella Excel va scritto esattamente <code>Bambino</code>: è il valore fisso del template italiano e Amazon rifiuta qualsiasi altra parola.</div>
-</section>
-
-<section class="slide" data-title="Quante righe servono" aria-label="Quante righe servono">
-  <div class="kicker">Teoria · 5</div>
-  <h2>Quante righe servono</h2>
-  <pre>righe = 1 parent + (numero taglie × numero colori)</pre>
-  <table>
-    <thead><tr><th>Modello</th><th>Taglie</th><th>Colori</th><th>Righe</th></tr></thead>
-    <tbody>
-      <tr><td>Oxford Slim</td><td>5 (S–XXL)</td><td>3</td><td><strong>16</strong></td></tr>
-      <tr><td>Popeline classica</td><td>8 (38–45)</td><td>4</td><td><strong>33</strong></td></tr>
-      <tr><td>Catalogo di 20 modelli, media 5×3</td><td>—</td><td>—</td><td><strong>320</strong></td></tr>
-    </tbody>
-  </table>
-  <p class="muted">Modelli e numeri sono illustrativi, non dati del cliente.</p>
-  <div class="note"><strong>Riflessione:</strong> ogni variante richiede un EAN. Il numero di righe è anche il numero di barcode che FULCO deve avere.</div>
-</section>
-
-<section class="slide" data-title="Taglie" aria-label="Taglie">
-  <div class="kicker">Teoria · 6</div>
-  <h2>Taglie: tre campi, regole rigide</h2>
-  <table>
-    <thead><tr><th>Campo</th><th>Valori ammessi nel template</th></tr></thead>
-    <tbody>
-      <tr><td>Sistema delle taglie</td><td>Solo <code>IT</code></td></tr>
-      <tr><td>Formato delle taglie</td><td><code>Testo</code>, <code>Numero</code>, <code>Età</code>, <code>Taglia collo</code>, <code>Manica e collo</code>, <code>Numeric Height</code>, <code>Alpha JASPO</code>, <code>Numeric GO</code></td></tr>
-      <tr><td>Taglia abbigliamento</td><td>Il valore, coerente con il formato scelto</td></tr>
-    </tbody>
-  </table>
-  <div class="grid g2">
-    <div class="card"><h3>Taglie a lettere → formato Testo</h3><p><code>XS (x_s)</code> <code>S (s)</code> <code>M (m)</code> <code>L (l)</code> <code>XL</code> <code>XXL (xx_l)</code> <code>3XL</code></p></div>
-    <div class="card"><h3>Taglia collo → formato Taglia collo</h3><p><code>36</code> <code>37</code> <code>38</code> … <code>46</code> (in cm)</p></div>
-  </div>
-  <div class="note"><strong>Trappola:</strong> "M" da sola non è un valore valido. Nel template la taglia è <code>M (m)</code>. Le regole taglia valgono su tutto il catalogo e Amazon riformatta i valori non conformi.</div>
-</section>
-
-<section class="slide" data-title="Colore" aria-label="Colore">
-  <div class="kicker">Teoria · 7</div>
-  <h2>Colore: nome commerciale e mappa</h2>
-  <div class="grid g2">
-    <div class="card"><h3>Colore</h3><p>Testo libero: il nome con cui FULCO vende il colore.</p><p><code>Azzurro cielo</code>, <code>Bianco ottico</code>, <code>Rosa antico</code></p></div>
-    <div class="card"><h3>Mappa dei colori</h3><p>Uno dei 20 valori standard. Alimenta i filtri di ricerca.</p><p><code>Azzurro cielo</code> → <code>Blu</code></p></div>
-  </div>
-  <div class="swatches" aria-label="I 20 valori della mappa dei colori">
-    <span class="sw"><i style="background:#f08c2c"></i>Arancione</span>
-    <span class="sw"><i style="background:#c0c0c0"></i>Argento</span>
-    <span class="sw"><i style="background:#d9c7a3"></i>Beige</span>
-    <span class="sw"><i style="background:#ffffff"></i>Bianco</span>
-    <span class="sw"><i style="background:#f3eee2"></i>Bianco sporco</span>
-    <span class="sw"><i style="background:#2d5ea8"></i>Blu</span>
-    <span class="sw"><i style="background:#9c6b30"></i>Bronzo</span>
-    <span class="sw"><i style="background:#eef2f5"></i>Chiaro</span>
-    <span class="sw"><i style="background:#f2d23c"></i>Giallo</span>
-    <span class="sw"><i style="background:#8a8f95"></i>Grigio</span>
-    <span class="sw"><i style="background:#6b4428"></i>Marrone</span>
-    <span class="sw"><i style="background:linear-gradient(135deg,#ddd,#888,#eee)"></i>Metallico</span>
-    <span class="sw"><i style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)"></i>Multicolore</span>
-    <span class="sw"><i style="background:#111"></i>Nero</span>
-    <span class="sw"><i style="background:#d4af37"></i>Oro</span>
-    <span class="sw"><i style="background:#f2a7bb"></i>Rosa</span>
-    <span class="sw"><i style="background:#c62828"></i>Rosso</span>
-    <span class="sw"><i style="background:#30b3b0"></i>Turchese</span>
-    <span class="sw"><i style="background:#2e7d32"></i>Verde</span>
-    <span class="sw"><i style="background:#6a3d9a"></i>Viola</span>
-  </div>
-  <div class="note"><strong>Riflessione:</strong> il nome commerciale vende, la mappa fa trovare. Un "Celeste" mappato come "Chiaro" non comparirebbe tra le camicie blu.</div>
-</section>
-
-<section class="slide" data-title="Codici prodotto (GTIN)" aria-label="Codici prodotto">
-  <div class="kicker">Teoria · 8</div>
-  <h2>Codici prodotto: EAN e GTIN</h2>
-  <p>Tipi ammessi dal template: <code>EAN</code> <code>GTIN</code> <code>UPC</code> <code>ASIN</code> <code>MINSAN</code> <code>Esenzione GTIN</code></p>
-  <div class="grid g2" style="margin-top:1rem">
-    <div class="card"><h3 class="ok">Strada consigliata: EAN GS1</h3><ul><li>Un codice per ogni combinazione taglia/colore</li><li>Rilasciato da GS1 a nome dell'azienda</li><li>Vale anche per altri marketplace e per il retail</li></ul></div>
-    <div class="card"><h3>Alternativa: esenzione GTIN</h3><ul><li>Si chiede in Seller Central per brand e categoria</li><li>Gratuita, non scade</li><li>Soluzione di breve periodo</li></ul></div>
-  </div>
-  <div class="note"><strong>Da evitare:</strong> barcode acquistati da rivenditori terzi. Amazon controlla il database GS1 e un prefisso che non corrisponde all'azienda genera problemi all'account.</div>
-  <p class="muted" style="margin-top:.8rem">Fonti: forum Seller Central; Goat Consulting; barcode.graphics.</p>
-</section>
-
-<section class="slide" data-title="Immagini" aria-label="Immagini">
-  <div class="kicker">Teoria · 9</div>
-  <h2>Immagini: le regole della foto principale</h2>
-  <div class="grid g2">
-    <ul>
-      <li>Sfondo bianco puro <strong>RGB 255,255,255</strong></li>
-      <li>Prodotto che occupa almeno l'<strong>85%</strong> del frame</li>
-      <li>Lato lungo <strong>≥ 1.000 px</strong> per lo zoom, meglio 1.600+</li>
-      <li>JPG in sRGB, massimo 10.000 px e 10 MB</li>
-      <li>Niente testo, loghi, watermark o accessori non venduti</li>
-    </ul>
-    <div class="card">
-      <h3>Come le controlla Amazon</h3>
-      <p>Un controllo automatico sugli angoli dell'immagine, sulle dimensioni e sulla presenza di testo, più un controllo manuale su segnalazione. Un'immagine non conforme sospende il listing.</p>
-    </div>
-  </div>
-  <div class="note"><strong>Per FULCO:</strong> ogni colore ha la sua foto principale. Nel template le immagini vanno inserite come <strong>URL pubblici</strong>, non come file allegati.</div>
-  <p class="muted" style="margin-top:.8rem">Fonti: Seller Central G1881; Amazon Fashion/Apparel Imaging Guidelines (PDF); jpg.now.</p>
-</section>
-
-<!-- ===== PARTE 2 ===== -->
-<section class="slide section" aria-label="Parte 2">
-  <div class="num">02</div>
-  <h1>Compilazione guidata</h1>
-  <p>Dalla raccolta dei dati al caricamento, con una famiglia di esempio e la verifica della riga già compilata dal cliente.</p>
-</section>
-
-<section class="slide" data-title="Cosa raccogliere prima" aria-label="Cosa raccogliere prima">
-  <div class="kicker">Compilazione · 1</div>
-  <h2>Prima di aprire Excel</h2>
-  <ol class="steps">
-    <li>Elenco dei modelli, con taglie e colori disponibili per ciascuno</li>
-    <li>EAN GS1 per ogni combinazione, oppure la decisione sull'esenzione</li>
-    <li>Prezzo IVA inclusa e quantità per ogni variante</li>
-    <li>Titolo, 5 punti elenco e descrizione per ogni modello</li>
-    <li>URL delle immagini, una principale per colore</li>
-    <li>Canale: <code>Gestito dal venditore (default)</code> oppure <code>Logistica di Amazon (UE)</code></li>
-  </ol>
-  <div class="note"><strong>Riflessione:</strong> il file Excel è l'ultimo passo. Senza un'anagrafica ordinata la compilazione diventa un lavoro di ricerca cella per cella.</div>
-</section>
-
-<section class="slide" data-title="Convenzione SKU" aria-label="Convenzione SKU">
-  <div class="kicker">Compilazione · 2</div>
-  <h2>Una convenzione SKU leggibile</h2>
-  <pre>PARENT   FUL-&lt;MODELLO&gt;                     FUL-OXSLIM
-VARIANTE FUL-&lt;MODELLO&gt;-&lt;COLORE&gt;-&lt;TAGLIA&gt;   FUL-OXSLIM-BIA-M</pre>
-  <table>
-    <thead><tr><th>Codice colore</th><th>Colore commerciale</th><th>Mappa</th></tr></thead>
-    <tbody>
-      <tr><td><code>BIA</code></td><td>Bianco ottico</td><td>Bianco</td></tr>
-      <tr><td><code>AZZ</code></td><td>Azzurro cielo</td><td>Blu</td></tr>
-      <tr><td><code>ROS</code></td><td>Rosa antico</td><td>Rosa</td></tr>
-    </tbody>
-  </table>
-  <div class="note"><strong>Perché conta:</strong> leggendo lo SKU si capisce subito modello, colore e taglia. Nel Processing Report, dove gli errori sono elencati per SKU, fa risparmiare tempo.</div>
-</section>
-
-<section class="slide" data-title="La riga parent" aria-label="La riga parent">
-  <div class="kicker">Compilazione · 3</div>
-  <h2>La riga parent</h2>
-  <table>
-    <thead><tr><th>Campo</th><th>Valore di esempio</th></tr></thead>
-    <tbody>
-      <tr><td>SKU</td><td><code>FUL-OXSLIM</code></td></tr>
-      <tr><td>Tipo di prodotto</td><td><code>SHIRT</code></td></tr>
-      <tr><td>Livello di parentela</td><td><code>Articolo parent</code></td></tr>
-      <tr><td>Variazione del Tema del Nome</td><td><code>FORMATO/COLORE</code></td></tr>
-      <tr><td>Nome dell'articolo</td><td>FULCO ITALY Camicia Uomo Oxford Slim Fit 100% Cotone Made in Italy</td></tr>
-      <tr><td>Nome del marchio · Produttore</td><td><code>FULCO ITALY</code> · <code>Fulco Italy</code></td></tr>
-      <tr><td>Descrizione · Punti elenco</td><td>Testi del modello</td></tr>
-      <tr><td class="bad">Taglia, colore, EAN, prezzo, quantità</td><td class="bad">Vuoti</td></tr>
-    </tbody>
-  </table>
-  <div class="note"><strong>Riflessione:</strong> il parent descrive il modello. Tutto quello che cambia da una variante all'altra va sulle righe variante.</div>
-</section>
-
-<section class="slide" data-title="Le righe variante" aria-label="Le righe variante">
-  <div class="kicker">Compilazione · 4</div>
-  <h2>Le righe variante</h2>
-  <table>
-    <thead><tr><th>SKU</th><th>SKU Parent</th><th>Parentela *</th><th>Formato</th><th>Taglia</th><th>Colore</th><th>Mappa</th><th>Tipo ID</th><th>ID</th><th>Prezzo</th><th>Qtà</th></tr></thead>
-    <tbody>
-      <tr><td>FUL-OXSLIM-BIA-S</td><td>FUL-OXSLIM</td><td><code>Bambino</code></td><td>Testo</td><td><code>S (s)</code></td><td>Bianco ottico</td><td>Bianco</td><td>EAN</td><td>80…001</td><td>79,00</td><td>10</td></tr>
-      <tr><td>FUL-OXSLIM-BIA-M</td><td>FUL-OXSLIM</td><td><code>Bambino</code></td><td>Testo</td><td><code>M (m)</code></td><td>Bianco ottico</td><td>Bianco</td><td>EAN</td><td>80…002</td><td>79,00</td><td>15</td></tr>
-      <tr><td>FUL-OXSLIM-AZZ-M</td><td>FUL-OXSLIM</td><td><code>Bambino</code></td><td>Testo</td><td><code>M (m)</code></td><td>Azzurro cielo</td><td>Blu</td><td>EAN</td><td>80…005</td><td>79,00</td><td>12</td></tr>
-    </tbody>
-  </table>
-  <p class="muted">EAN, prezzi e quantità sono segnaposto. * Nella colonna Parentela il valore da inserire è <code>Bambino</code>, l'unico accettato dal template per le varianti.</p>
-  <h3>Su ogni variante vanno ripetuti anche</h3>
-  <p>Tema di variazione, marchio, produttore, sistema taglie <code>IT</code>, attributi della camicia (colletto, tessuto, vestibilità, tessitura), condizione <code>Nuovo</code>, canale, dimensioni del pacco, paese di origine, URL immagine.</p>
-  <div class="note"><strong>Titolo della variante:</strong> la definizione del template chiede marchio, colore, vestibilità e taglia. Esempio: <em>FULCO ITALY Camicia Uomo Oxford Slim Fit Bianco ottico M</em>.</div>
-</section>
-
-<section class="slide" data-title="Verifica della riga 8" aria-label="Verifica della riga 8">
-  <div class="kicker">Compilazione · 5 · Caso reale</div>
-  <h2>La riga 8 del cliente: 7 valori da correggere</h2>
-  <table>
-    <thead><tr><th>Campo</th><th>Inserito</th><th>Problema</th><th>Correzione proposta</th></tr></thead>
-    <tbody>
-      <tr><td>Stile del colletto</td><td class="bad">Collo francese</td><td>Non esiste nell'elenco</td><td class="good">Colletto semi francese o Collo cutaway</td></tr>
-      <tr><td>Stile</td><td class="bad">Elegante, Formale, Business Casual</td><td>Tre valori in una cella</td><td class="good">Classico</td></tr>
-      <tr><td>Fascia di età</td><td class="bad">Adulto, Ragazzo</td><td>Due valori in una cella</td><td class="good">Adulto</td></tr>
-      <tr><td>Nome del tipo di prodotto</td><td class="bad">Camicia</td><td>Non in elenco</td><td class="good">Camicia elegante o Camicia button-down</td></tr>
-      <tr><td>Tema</td><td class="bad">Elegante e Versatile</td><td>L'elenco è per soggetti grafici</td><td class="good">Vuoto</td></tr>
-      <tr><td>Caratteristica dell'ornamento</td><td class="bad">Carrè sul dietro</td><td>L'elenco è per decorazioni</td><td class="good">Vuoto, citarlo nei bullet</td></tr>
-      <tr><td>Stile pezzo sopra</td><td class="bad">Camicia casual</td><td>L'elenco è per silhouette</td><td class="good">Vuoto</td></tr>
-    </tbody>
-  </table>
-  <p class="muted">Gli altri 21 valori della riga sono corretti. Verifica fatta sul file confrontando ogni cella con la scheda Valori validi.</p>
-</section>
-
-<section class="slide" data-title="Cosa insegna la riga 8" aria-label="Cosa insegna la riga 8">
-  <div class="kicker">Compilazione · 6 · Riflessioni</div>
-  <h2>Cosa ci insegna la riga 8</h2>
-  <div class="grid g3">
-    <div class="card"><h3>Una tendina non è una descrizione</h3><p>"Business Casual" o "Carrè sul dietro" sono informazioni utili, ma il loro posto è nei bullet e nella descrizione, dove il cliente le legge.</p></div>
-    <div class="card"><h3>Un valore per cella</h3><p>Nei campi a tendina non si elencano più valori separati da virgole. Si sceglie quello che descrive meglio il prodotto.</p></div>
-    <div class="card"><h3>Il nome di un campo può ingannare</h3><p>"Tema" e "Stile pezzo sopra" sembrano adatti a descrivere una camicia elegante, ma i loro elenchi parlano d'altro. Prima di scrivere, conviene aprire Valori validi.</p></div>
-  </div>
-  <div class="note"><strong>Da chiedere a FULCO:</strong> cosa intendono con "collo francese". In sartoria indica spesso un collo semi francese o cutaway, ma la scelta deve essere loro.</div>
-</section>
-
-<section class="slide" data-title="Regole di consistenza" aria-label="Regole di consistenza">
-  <div class="kicker">Compilazione · 7</div>
-  <h2>Sette regole per non farsi rifiutare il file</h2>
-  <ol class="steps">
-    <li>Lo <code>SKU articolo Parent</code> di ogni variante è identico allo SKU del parent</li>
-    <li>Con tema <code>FORMATO/COLORE</code> ogni variante ha sia taglia sia colore, senza coppie ripetute</li>
-    <li>Un EAN per SKU, mai ripetuto</li>
-    <li>SKU univoci su tutto il catalogo</li>
-    <li>Valori a tendina copiati esattamente, parentesi comprese: <code>M (m)</code></li>
-    <li>Un solo valore per campo a tendina</li>
-    <li>Sistema taglie sempre <code>IT</code></li>
-  </ol>
-</section>
-
-<section class="slide" data-title="Caricamento e correzione" aria-label="Caricamento e correzione">
-  <div class="kicker">Compilazione · 8</div>
-  <h2>Caricare e correggere</h2>
-  <div class="grid g2">
-    <ol class="steps">
-      <li>Salvare nel formato del template (<code>.xlsm</code>)</li>
-      <li>Caricare da <code>Aggiungi prodotti tramite caricamento</code></li>
-      <li>Aprire il <strong>Processing Report</strong>: errori bloccanti e avvisi, elencati per SKU</li>
-      <li>Correggere e ricaricare</li>
-    </ol>
-    <div class="card">
-      <h3>Aggiornare listing esistenti</h3>
-      <p>Compilare solo lo SKU e i campi da cambiare, con <code>Azione sull'offerta</code> = <code>Modifica (aggiornamento parziale)</code>. Così non si sovrascrivono dati corretti.</p>
-    </div>
-  </div>
-  <div class="note"><strong>Consiglio pratico:</strong> il primo caricamento conviene farlo con un solo modello, cioè un parent e le sue varianti. Gli errori di impostazione emergono subito e si correggono prima di replicarli su tutto il catalogo.</div>
-</section>
-
-<section class="slide" data-title="Checklist finale" aria-label="Checklist finale">
-  <div class="kicker">Compilazione · 9</div>
-  <h2>Checklist prima del caricamento</h2>
-  <div class="grid g2">
-    <ul class="check">
-      <li>9 obbligatori: SKU, Tipo prodotto, SKU Parent, Tema, Titolo, Marchio, Tipo ID, ID prodotto, Produttore</li>
-      <li>Taglia: sistema <code>IT</code>, formato, valore corretto</li>
-      <li>Colore e mappa dei colori</li>
-      <li>Prezzo IVA inclusa, canale, quantità, condizione <code>Nuovo</code></li>
-    </ul>
-    <ul class="check">
-      <li>Descrizione e punti elenco</li>
-      <li>URL immagine principale per ogni variante</li>
-      <li>I 7 valori della riga 8 corretti</li>
-      <li>Nessuna cella a tendina con valori separati da virgole</li>
-    </ul>
-  </div>
-</section>
-
-<!-- ===== PARTE 3 ===== -->
-<section class="slide" data-title="Decisioni aperte" aria-label="Decisioni aperte">
-  <div class="kicker">Prossimi passi</div>
-  <h2>Quattro decisioni da prendere con FULCO</h2>
-  <div class="grid g2">
-    <div class="card"><h3>1. Barcode</h3><p>EAN GS1 già disponibili o esenzione GTIN?</p></div>
-    <div class="card"><h3>2. Formato taglia</h3><p>Lettere (S/M/L) o taglia collo (39/40/41)? Con entrambi possono servire caricamenti separati.</p></div>
-    <div class="card"><h3>3. Colletto</h3><p>Quale valore dell'elenco corrisponde al loro "collo francese"?</p></div>
-    <div class="card"><h3>4. Logistica</h3><p>Spedizione propria o Logistica di Amazon (FBA)?</p></div>
-  </div>
-</section>
-
-<section class="slide" data-title="Fonti" aria-label="Fonti">
-  <div class="kicker">Riferimenti</div>
-  <h2>Fonti</h2>
-  <div class="grid g2">
-    <div>
-      <h3>Ufficiali Amazon</h3>
-      <ul>
-        <li><a href="https://sellercentral.amazon.com/help/hub/reference/external/G581?locale=en-US" target="_blank" rel="noopener">Build your inventory file (G581)</a></li>
-        <li><a href="https://sellercentral.amazon.com/help/hub/reference/external/G1881?locale=en-US" target="_blank" rel="noopener">Product image guide (G1881)</a></li>
-        <li><a href="https://developer-docs.amazon.com/sp-api/lang-en_EN/docs/listings-items-guidance-for-complex-attributes" target="_blank" rel="noopener">SP-API, Guidance for Complex Attributes</a></li>
-        <li><a href="https://m.media-amazon.com/images/G/01/SPIS/Fashion_Apparel_Imaging_Guidelines_Spring_2021.pdf" target="_blank" rel="noopener">Fashion/Apparel Imaging Guidelines (PDF)</a></li>
-        <li><a href="https://images-na.ssl-images-amazon.com/images/G/02/rainier/help/Apparel_Size_Quality_EU_UK.pdf" target="_blank" rel="noopener">Apparel Size Quality EU/UK (PDF)</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3>Guide di settore</h3>
-      <ul>
-        <li><a href="https://www.goatconsulting.com/amazon-product-id/amazon-product-id-exemption" target="_blank" rel="noopener">Goat Consulting, Product ID Exemption</a></li>
-        <li><a href="https://www.barcode.graphics/amazon-gtin-exemption/" target="_blank" rel="noopener">barcode.graphics, GTIN Exemption</a></li>
-        <li><a href="https://support.storeautomator.com/hc/en-us/articles/4406848817682-New-Apparel-Size-Requirements-for-Amazon" target="_blank" rel="noopener">StoreAutomator, Apparel Size Requirements</a></li>
-        <li><a href="https://jpg.now/blog/amazon-seller-image-requirements-cheatsheet" target="_blank" rel="noopener">jpg.now, Image Requirements</a></li>
-        <li><a href="https://flatfile.pro/ffp/amazon-flat-file-variations/" target="_blank" rel="noopener">flatfile.pro, Flat file variations</a></li>
-        <li><a href="https://jarvio.io/blog/amazon-variations-parent-child" target="_blank" rel="noopener">Jarvio, Parent-Child Variations</a></li>
-        <li><a href="https://feedvisor.com/university/bulk-listing/" target="_blank" rel="noopener">Feedvisor, Bulk Listing Guide 2026</a></li>
-      </ul>
-    </div>
-  </div>
-  <p class="muted" style="margin-top:1rem">I contenuti delle fonti sono stati riformulati. Valori validi e verifica della riga 8 provengono dal file <code>FULCO - Shirt.xlsm</code>.</p>
-</section>
-
-</main>
-
-<nav class="bar" aria-label="Navigazione slide">
-  <button id="prev" type="button" aria-label="Slide precedente">← Indietro</button>
-  <span id="counter" aria-live="polite"></span>
-  <button id="next" type="button" aria-label="Slide successiva">Avanti →</button>
-</nav>
+<div class="pager"><span id="cur">1</span> / <span id="tot">25</span></div>
+<div class="navhint">← → per navigare</div>
+<button class="arrow left" id="prev" aria-label="Precedente"></button>
+<button class="arrow right" id="next" aria-label="Successiva"></button>
 
 <script>
-(function () {
-  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
-  var idx = 0;
-  var prev = document.getElementById('prev');
-  var next = document.getElementById('next');
-  var counter = document.getElementById('counter');
-  var progress = document.getElementById('progress');
+  // swatches slide colore
+  var SW=[["Arancione","F08C2C"],["Argento","C0C0C0"],["Beige","D9C7A3"],["Bianco","FFFFFF"],["Bianco sporco","F3EEE2"],
+    ["Blu","2D5EA8"],["Bronzo","9C6B30"],["Chiaro","EEF2F5"],["Giallo","F2D23C"],["Grigio","8A8F95"],
+    ["Marrone","6B4428"],["Metallico","B0B7BF"],["Multicolore","C9AFCE"],["Nero","111111"],["Oro","D4AF37"],
+    ["Rosa","F2A7BB"],["Rosso","C62828"],["Turchese","30B3B0"],["Verde","2E7D32"],["Viola","6A3D9A"]];
+  var sw=document.getElementById("swatches");
+  if(sw){SW.forEach(function(c){var d=document.createElement("div");d.style.display="flex";d.style.alignItems="center";d.style.gap=".5cqw";d.style.fontSize=".9cqw";d.style.color="#595959";d.innerHTML='<span style="width:1cqw;height:1cqw;border-radius:50%;border:1px solid #B8C2CC;background:#'+c[1]+';display:inline-block;flex:none;"></span>'+c[0];sw.appendChild(d);});}
 
-  // Indice automatico dalle slide con data-title
-  var toc = document.getElementById('toc');
-  slides.forEach(function (s, i) {
-    var t = s.getAttribute('data-title');
-    if (!t) return;
-    var li = document.createElement('li');
-    var a = document.createElement('a');
-    a.textContent = t;
-    a.href = '#' + (i + 1);
-    a.addEventListener('click', function (e) { e.preventDefault(); go(i); });
-    li.appendChild(a);
-    toc.appendChild(li);
+  // navigazione
+  var slides=[].slice.call(document.querySelectorAll(".slide"));
+  var i=0; var tot=slides.length;
+  document.getElementById("tot").textContent=tot;
+  function show(n){i=Math.max(0,Math.min(tot-1,n));slides.forEach(function(s,k){s.classList.toggle("active",k===i);});document.getElementById("cur").textContent=i+1;}
+  function nx(){show(i+1);} function pv(){show(i-1);}
+  document.getElementById("next").onclick=nx;
+  document.getElementById("prev").onclick=pv;
+  document.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "||e.key==="PageDown"){e.preventDefault();nx();}
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"||e.key==="PageUp"){e.preventDefault();pv();}
+    else if(e.key==="Home"){show(0);} else if(e.key==="End"){show(tot-1);}
   });
-
-  function go(i) {
-    idx = Math.max(0, Math.min(slides.length - 1, i));
-    slides.forEach(function (s, j) { s.classList.toggle('active', j === idx); });
-    slides[idx].scrollTop = 0;
-    counter.textContent = (idx + 1) + ' / ' + slides.length;
-    progress.style.width = ((idx + 1) / slides.length * 100) + '%';
-    prev.disabled = idx === 0;
-    next.disabled = idx === slides.length - 1;
-    history.replaceState(null, '', '#' + (idx + 1));
-  }
-
-  prev.addEventListener('click', function () { go(idx - 1); });
-  next.addEventListener('click', function () { go(idx + 1); });
-  document.addEventListener('keydown', function (e) {
-    if (e.target.tagName === 'A' && e.key === 'Enter') return;
-    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
-    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(idx - 1); }
-    if (e.key === 'Home') go(0);
-    if (e.key === 'End') go(slides.length - 1);
-  });
-
-  if (/[?&]export\b/.test(location.search)) document.body.classList.add('export');
-
-  var start = parseInt((location.hash || '').replace('#', ''), 10);
-  go(isNaN(start) ? 0 : start - 1);
-})();
+  show(0);
 </script>
 </body>
 </html>
